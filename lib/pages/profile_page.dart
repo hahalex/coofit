@@ -1,6 +1,7 @@
 // lib/pages/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:email_validator/email_validator.dart';
 import '../providers/auth_provider.dart';
 import '../services/db_service.dart';
 
@@ -35,7 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
         _initialized = true;
       });
     } else {
-      // Create default profile if missing
       await _db.createProfile(userId);
       _loadProfile(userId);
     }
@@ -78,6 +78,237 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
+  // ---- Dialogs for change email and password ----
+
+  Future<void> _showChangeEmailDialog(int userId) async {
+    final _dlgKey = GlobalKey<FormState>();
+    String? _dlgError;
+    bool _dlgLoading = false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        final emailCtl = TextEditingController();
+        final passCtl = TextEditingController();
+
+        return StatefulBuilder(
+          builder: (ctx2, setStateDlg) {
+            return AlertDialog(
+              title: const Text('Change email'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _dlgKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_dlgError != null) ...[
+                        Text(
+                          _dlgError!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      TextFormField(
+                        controller: emailCtl,
+                        decoration: const InputDecoration(
+                          labelText: 'New email',
+                        ),
+                        validator: (v) =>
+                            (v == null ||
+                                !RegExp(
+                                  r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                                ).hasMatch(v.trim()))
+                            ? 'Неверный email'
+                            : null,
+                      ),
+                      TextFormField(
+                        controller: passCtl,
+                        decoration: const InputDecoration(
+                          labelText: 'Current password',
+                        ),
+                        obscureText: true,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Введите текущий пароль'
+                            : null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx2).pop(),
+                  child: const Text('Cancel'),
+                ),
+                _dlgLoading
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : TextButton(
+                        onPressed: () async {
+                          if (!_dlgKey.currentState!.validate()) return;
+                          setStateDlg(() {
+                            _dlgError = null;
+                            _dlgLoading = true;
+                          });
+                          try {
+                            await Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            ).changeEmail(
+                              currentPassword: passCtl.text,
+                              newEmail: emailCtl.text.trim(),
+                            );
+                            Navigator.of(ctx2).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Email updated')),
+                            );
+                          } catch (e) {
+                            var msg = e.toString();
+                            if (msg.contains('invalid_current_password'))
+                              msg = 'Неверный текущий пароль';
+                            if (msg.contains('email_taken'))
+                              msg = 'Этот email уже занят';
+                            if (msg.contains('invalid_email_format'))
+                              msg = 'Неверный формат email';
+                            setStateDlg(() {
+                              _dlgError = msg;
+                              _dlgLoading = false;
+                            });
+                          }
+                        },
+                        child: const Text('Change'),
+                      ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showChangePasswordDialog(int userId) async {
+    final _dlgKey = GlobalKey<FormState>();
+    String? _dlgError;
+    bool _dlgLoading = false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        final currentCtl = TextEditingController();
+        final newCtl = TextEditingController();
+        final confirmCtl = TextEditingController();
+
+        return StatefulBuilder(
+          builder: (ctx2, setStateDlg) {
+            return AlertDialog(
+              title: const Text('Change password'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _dlgKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_dlgError != null) ...[
+                        Text(
+                          _dlgError!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      TextFormField(
+                        controller: currentCtl,
+                        decoration: const InputDecoration(
+                          labelText: 'Current password',
+                        ),
+                        obscureText: true,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Введите текущий пароль'
+                            : null,
+                      ),
+                      TextFormField(
+                        controller: newCtl,
+                        decoration: const InputDecoration(
+                          labelText: 'New password',
+                        ),
+                        obscureText: true,
+                        validator: (v) => (v == null || v.length < 6)
+                            ? 'Пароль должен быть >= 6 символов'
+                            : null,
+                      ),
+                      TextFormField(
+                        controller: confirmCtl,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm new password',
+                        ),
+                        obscureText: true,
+                        validator: (v) =>
+                            (v != newCtl.text) ? 'Пароли не совпадают' : null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx2).pop(),
+                  child: const Text('Cancel'),
+                ),
+                _dlgLoading
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : TextButton(
+                        onPressed: () async {
+                          if (!_dlgKey.currentState!.validate()) return;
+                          setStateDlg(() {
+                            _dlgError = null;
+                            _dlgLoading = true;
+                          });
+                          try {
+                            await Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            ).changePassword(
+                              currentPassword: currentCtl.text,
+                              newPassword: newCtl.text,
+                            );
+                            Navigator.of(ctx2).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Password updated')),
+                            );
+                          } catch (e) {
+                            var msg = e.toString();
+                            if (msg.contains('invalid_current_password'))
+                              msg = 'Неверный текущий пароль';
+                            if (msg.contains('password_too_short'))
+                              msg = 'Новый пароль слишком короткий';
+                            setStateDlg(() {
+                              _dlgError = msg;
+                              _dlgLoading = false;
+                            });
+                          }
+                        },
+                        child: const Text('Change'),
+                      ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -90,7 +321,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     if (!_initialized) {
-      // load profile once
       _loadProfile(user.id!).catchError((e) {
         setState(() => _error = e.toString());
       });
@@ -105,7 +335,6 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await auth.logout();
-              // After logout, app's Consumer in app.dart will show LoginPage
             },
           ),
         ],
@@ -126,6 +355,25 @@ class _ProfilePageState extends State<ProfilePage> {
                         title: Text(user.username),
                         subtitle: Text(user.email),
                         leading: const Icon(Icons.person),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (v) {
+                            if (v == 'change_email') {
+                              _showChangeEmailDialog(user.id!);
+                            } else if (v == 'change_password') {
+                              _showChangePasswordDialog(user.id!);
+                            }
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'change_email',
+                              child: Text('Change email'),
+                            ),
+                            PopupMenuItem(
+                              value: 'change_password',
+                              child: Text('Change password'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -206,12 +454,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: const Text('Save'),
                                 ),
                           const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () {
-                              // optional: navigate to change password page later
-                            },
-                            child: const Text('Change password'),
-                          ),
                         ],
                       ),
                     ),

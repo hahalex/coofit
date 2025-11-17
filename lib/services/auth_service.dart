@@ -91,6 +91,59 @@ class AuthService {
 
     return UserModel.fromMap(userMap);
   }
+
+  /// Change password: проверяет текущий пароль, генерирует новую соль + хэш, сохраняет в БД.
+  Future<void> changePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final userMap = await _db.getUserById(userId);
+    if (userMap == null) throw Exception('user_not_found');
+
+    final salt = userMap['salt'] as String;
+    final storedHash = userMap['password_hash'] as String;
+    final attemptHash = _hashPassword(currentPassword, salt);
+
+    if (attemptHash != storedHash) throw Exception('invalid_current_password');
+
+    if (newPassword.length < 6) throw Exception('password_too_short');
+
+    final newSalt = _generateSalt();
+    final newHash = _hashPassword(newPassword, newSalt);
+
+    await _db.updateUserPassword(userId, newHash, newSalt);
+  }
+
+  /// Change email: проверяет пароль, проверяет уникальность нового email, сохраняет в БД.
+  Future<void> changeEmail({
+    required int userId,
+    required String currentPassword,
+    required String newEmail,
+  }) async {
+    final userMap = await _db.getUserById(userId);
+    if (userMap == null) throw Exception('user_not_found');
+
+    // verify password
+    final salt = userMap['salt'] as String;
+    final storedHash = userMap['password_hash'] as String;
+    final attemptHash = _hashPassword(currentPassword, salt);
+    if (attemptHash != storedHash) throw Exception('invalid_current_password');
+
+    // basic email format check
+    if (newEmail.trim().isEmpty ||
+        !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(newEmail.trim())) {
+      throw Exception('invalid_email_format');
+    }
+
+    // unique check
+    final byEmail = await _db.getUserByEmail(newEmail.trim());
+    if (byEmail != null && byEmail['id'] != userId) {
+      throw Exception('email_taken');
+    }
+
+    await _db.updateUserEmail(userId, newEmail.trim());
+  }
 }
 
 // Simple PBKDF2 implementation helper using package `crypto`

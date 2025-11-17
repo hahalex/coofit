@@ -134,5 +134,40 @@ class DBService {
     );
   }
 
-  // Add more CRUD methods for workouts/exercises as needed...
+  // --- update user email ---
+  Future<int> updateUserEmail(int userId, String newEmail) async {
+    final db = await database;
+    return await db.update(
+      'users',
+      {'email': newEmail},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  // --- update user password/hash+salt ---
+  Future<int> updateUserPassword(
+    int userId,
+    String newHash,
+    String newSalt,
+  ) async {
+    final db = await database;
+    return await db.update(
+      'users',
+      {'password_hash': newHash, 'salt': newSalt},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  // Generic update user (optional)
+  Future<int> updateUserFields(int userId, Map<String, dynamic> values) async {
+    final db = await database;
+    return await db.update(
+      'users',
+      values,
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
 }

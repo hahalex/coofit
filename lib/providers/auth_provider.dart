@@ -51,4 +51,42 @@ class AuthProvider with ChangeNotifier {
     await _session.clear();
     notifyListeners();
   }
+
+  /// Change password wrapper — пробрасывает исключения выше
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_user == null) throw Exception('no_user');
+    await _auth.changePassword(
+      userId: _user!.id!,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+    // После смены пароля пользовательная запись в БД уже обновлена — можно перезагрузить пользователя:
+    final map = await _db.getUserById(_user!.id!);
+    if (map != null) {
+      _user = UserModel.fromMap(map);
+      notifyListeners();
+    }
+  }
+
+  /// Change email wrapper
+  Future<void> changeEmail({
+    required String currentPassword,
+    required String newEmail,
+  }) async {
+    if (_user == null) throw Exception('no_user');
+    await _auth.changeEmail(
+      userId: _user!.id!,
+      currentPassword: currentPassword,
+      newEmail: newEmail,
+    );
+    // Обновим локальную модель
+    final map = await _db.getUserById(_user!.id!);
+    if (map != null) {
+      _user = UserModel.fromMap(map);
+      notifyListeners();
+    }
+  }
 }
