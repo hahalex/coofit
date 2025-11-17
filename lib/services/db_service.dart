@@ -170,4 +170,70 @@ class DBService {
       whereArgs: [userId],
     );
   }
+
+  // --- Workouts ---
+  Future<int> insertWorkout(Map<String, dynamic> workoutMap) async {
+    final db = await database;
+    return db.insert('workouts', workoutMap);
+  }
+
+  Future<List<Map<String, dynamic>>> getWorkoutsByUser(int userId) async {
+    final db = await database;
+    return db.query('workouts', where: 'user_id = ?', whereArgs: [userId]);
+  }
+
+  Future<int> updateWorkout(int workoutId, Map<String, dynamic> values) async {
+    final db = await database;
+    return db.update(
+      'workouts',
+      values,
+      where: 'id = ?',
+      whereArgs: [workoutId],
+    );
+  }
+
+  Future<int> deleteWorkout(int workoutId) async {
+    final db = await database;
+    await db.delete(
+      'exercises',
+      where: 'workout_id = ?',
+      whereArgs: [workoutId],
+    ); // удаляем упражнения
+    return db.delete('workouts', where: 'id = ?', whereArgs: [workoutId]);
+  }
+
+  // --- Exercises ---
+  Future<int> insertExercise(Map<String, dynamic> exerciseMap) async {
+    final db = await database;
+    return db.insert('exercises', exerciseMap);
+  }
+
+  Future<List<Map<String, dynamic>>> getExercisesByWorkout(
+    int workoutId,
+  ) async {
+    final db = await database;
+    return db.query(
+      'exercises',
+      where: 'workout_id = ?',
+      whereArgs: [workoutId],
+    );
+  }
+
+  Future<int> updateExercise(
+    int exerciseId,
+    Map<String, dynamic> values,
+  ) async {
+    final db = await database;
+    return db.update(
+      'exercises',
+      values,
+      where: 'id = ?',
+      whereArgs: [exerciseId],
+    );
+  }
+
+  Future<int> deleteExercise(int exerciseId) async {
+    final db = await database;
+    return db.delete('exercises', where: 'id = ?', whereArgs: [exerciseId]);
+  }
 }

@@ -6,7 +6,10 @@ class StepPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Step Page (Placeholder)', style: TextStyle(fontSize: 24)),
+      child: Text(
+        'здесь могла быть ваша реклама',
+        style: TextStyle(fontSize: 24),
+      ),
     );
   }
 }

@@ -6,7 +6,10 @@ class FoodPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Food Page (Placeholder)', style: TextStyle(fontSize: 24)),
+      child: Text(
+        'скоро во всех кинотеатрах страны',
+        style: TextStyle(fontSize: 24),
+      ),
     );
   }
 }
