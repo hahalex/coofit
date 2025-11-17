@@ -5,8 +5,10 @@ class NotificationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('просто дождитесь', style: TextStyle(fontSize: 24)),
+    // НЕ используем const Scaffold — чтобы не требовать const для AppBar/Text
+    return Scaffold(
+      appBar: AppBar(title: const Text('Notifications')),
+      body: const Center(child: Text('Уведомления (заглушка)')),
     );
   }
 }

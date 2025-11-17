@@ -8,6 +8,8 @@ import 'pages/step_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/food_page.dart';
 import 'pages/auth/login_page.dart';
+import 'pages/notifications_page.dart';
+import 'pages/settings_page.dart';
 import 'providers/auth_provider.dart';
 
 class MyApp extends StatefulWidget {
@@ -35,6 +37,11 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fitness Tracker',
+      // Регистрируем маршруты для уведомлений и настроек
+      routes: {
+        '/notifications': (_) => NotificationsPage(),
+        '/settings': (_) => SettingsPage(),
+      },
       home: Consumer<AuthProvider>(
         builder: (context, auth, child) {
           // После первого построения дерева виджетов проверим состояние авторизации

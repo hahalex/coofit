@@ -5,8 +5,9 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('зима близко', style: TextStyle(fontSize: 24)),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
+      body: const Center(child: Text('Настройки (заглушка)')),
     );
   }
 }
