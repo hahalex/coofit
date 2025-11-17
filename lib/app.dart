@@ -1,12 +1,17 @@
+// lib/app.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'pages/home_page.dart';
 import 'pages/workout_page.dart';
 import 'pages/step_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/food_page.dart';
+import 'pages/auth/login_page.dart';
+import 'providers/auth_provider.dart';
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key}); // добавили key по рекомендации Flutter
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -22,31 +27,60 @@ class _MyAppState extends State<MyApp> {
     const FoodPage(),
   ];
 
+  // Флаг, чтобы один раз показать страницу логина и не пушить её снова при rebuild
+  bool _loginShown = false;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fitness Tracker',
-      home: Scaffold(
-        body: _pages[_selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: (i) => setState(() => _selectedIndex = i),
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.fitness_center),
-              label: 'Workout',
+      home: Consumer<AuthProvider>(
+        builder: (context, auth, child) {
+          // После первого построения дерева виджетов проверим состояние авторизации
+          // и если пользователь не залогинен — откроем LoginPage.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!auth.isLoggedIn && !_loginShown) {
+              _loginShown = true;
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+            }
+            // Если пользователь залогинился и login был показан ранее, сбрасываем флаг,
+            // чтобы при разлогине можно было снова показать экран логина.
+            if (auth.isLoggedIn && _loginShown) {
+              _loginShown = false;
+            }
+          });
+
+          return Scaffold(
+            body: _pages[_selectedIndex],
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: (i) => setState(() => _selectedIndex = i),
+              type: BottomNavigationBarType.fixed,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.fitness_center),
+                  label: 'Workout',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.directions_walk),
+                  label: 'Steps',
+                ),
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.fastfood),
+                  label: 'Food',
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.directions_walk),
-              label: 'Steps',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-            BottomNavigationBarItem(icon: Icon(Icons.fastfood), label: 'Food'),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
