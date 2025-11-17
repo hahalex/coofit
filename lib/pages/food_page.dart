@@ -5,9 +5,8 @@ class FoodPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Food Tracker")),
-      body: const Center(child: Text("Food Tracker (заглушка)")),
+    return const Center(
+      child: Text('Food Page (Placeholder)', style: TextStyle(fontSize: 24)),
     );
   }
 }

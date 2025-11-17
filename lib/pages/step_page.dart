@@ -5,9 +5,8 @@ class StepPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Step Menu")),
-      body: const Center(child: Text("Step Page (заглушка)")),
+    return const Center(
+      child: Text('Step Page (Placeholder)', style: TextStyle(fontSize: 24)),
     );
   }
 }

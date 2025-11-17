@@ -6,6 +6,8 @@ import 'pages/profile_page.dart';
 import 'pages/food_page.dart';
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key}); // добавили key по рекомендации Flutter
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -13,22 +15,24 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 2; // 0-workout,1-step,2-home,3-profile,4-food
   final List<Widget> _pages = [
-    WorkoutPage(),
-    StepPage(),
-    HomePage(),
-    ProfilePage(),
-    FoodPage(),
+    const WorkoutPage(),
+    const StepPage(),
+    const HomePage(),
+    const ProfilePage(),
+    const FoodPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Fitness Tracker',
       home: Scaffold(
         body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (i) => setState(() => _selectedIndex = i),
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.fitness_center),
