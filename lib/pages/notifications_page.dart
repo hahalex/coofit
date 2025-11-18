@@ -5,10 +5,31 @@ class NotificationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // НЕ используем const Scaffold — чтобы не требовать const для AppBar/Text
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
-      body: const Center(child: Text('Уведомления (заглушка)')),
+      backgroundColor: const Color(0xFF232323), // фон всей страницы
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF232323), // фон верхней панели
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: const Color(0xFFDB0058), // цвет кнопки назад
+          iconSize: 30,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 8.0), // смещение заголовка влево
+          child: Text(
+            'Notifications',
+            style: TextStyle(
+              color: Color(0xFFDB0058), // цвет текста
+              fontFamily: 'InriaSans-Regular',
+              fontSize: 30,
+            ),
+          ),
+        ),
+        centerTitle: false, // чтобы заголовок не был строго по центру
+      ),
+      body: const Center(),
     );
   }
 }

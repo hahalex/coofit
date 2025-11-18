@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'providers/auth_provider.dart';
-import 'pages/auth/login_page.dart';
 
 void main() {
   runApp(
@@ -19,6 +18,6 @@ class MyAppWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MyApp(); // оставляем вашу реализацию MyApp
+    return const MyApp(); // используем основной MaterialApp из app.dart
   }
 }

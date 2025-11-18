@@ -29,7 +29,6 @@ class _MyAppState extends State<MyApp> {
     const FoodPage(),
   ];
 
-  // Флаг, чтобы один раз показать страницу логина и не пушить её снова при rebuild
   bool _loginShown = false;
 
   @override
@@ -37,22 +36,46 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fitness Tracker',
+
+      // глобальная тёмная тема
       theme: ThemeData(
-        fontFamily: 'InriaSans', // <--- шрифт по умолчанию
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF232323),
+        canvasColor: const Color(0xFF232323),
+        dialogBackgroundColor: const Color(0xFF232323),
+        fontFamily: 'InriaSans',
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.white,
+          secondary: Colors.white70,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF232323),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white60,
+        ),
       ),
+
       routes: {
         '/notifications': (_) => NotificationsPage(),
         '/settings': (_) => SettingsPage(),
       },
+
       home: Consumer<AuthProvider>(
         builder: (context, auth, child) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!auth.isLoggedIn && !_loginShown) {
               _loginShown = true;
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+
+              // переход без анимации
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => const LoginPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
             }
+
             if (auth.isLoggedIn && _loginShown) {
               _loginShown = false;
             }
