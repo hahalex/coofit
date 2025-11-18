@@ -37,15 +37,15 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fitness Tracker',
-      // Регистрируем маршруты для уведомлений и настроек
+      theme: ThemeData(
+        fontFamily: 'InriaSans', // <--- шрифт по умолчанию
+      ),
       routes: {
         '/notifications': (_) => NotificationsPage(),
         '/settings': (_) => SettingsPage(),
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, child) {
-          // После первого построения дерева виджетов проверим состояние авторизации
-          // и если пользователь не залогинен — откроем LoginPage.
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!auth.isLoggedIn && !_loginShown) {
               _loginShown = true;
@@ -53,8 +53,6 @@ class _MyAppState extends State<MyApp> {
                 context,
               ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
             }
-            // Если пользователь залогинился и login был показан ранее, сбрасываем флаг,
-            // чтобы при разлогине можно было снова показать экран логина.
             if (auth.isLoggedIn && _loginShown) {
               _loginShown = false;
             }
