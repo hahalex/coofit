@@ -156,7 +156,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
             // Кнопка Sign Up
             Padding(
