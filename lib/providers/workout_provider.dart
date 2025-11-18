@@ -19,12 +19,47 @@ class WorkoutProvider with ChangeNotifier {
           (e) => Workout(
             id: e['id'],
             userId: e['user_id'],
-            dayOfWeek: e['day_of_week'].toString(),
-            name: e['title'].toString(),
-            description: e['description'].toString(),
+            // приводим day_of_week к строке (может быть числом или названием)
+            dayOfWeek: (e['day_of_week'] ?? '').toString(),
+            name: (e['title'] ?? e['name'] ?? '').toString(),
+            description: (e['description'] ?? '').toString(),
           ),
         )
         .toList();
+
+    // --- сортируем по дню недели: Monday(1) .. Sunday(7) ---
+    int dayIndexFromString(String s) {
+      // пытаемся получить число (1..7)
+      final n = int.tryParse(s);
+      if (n != null) return n.clamp(1, 7);
+      // иначе мапа имён (учитываем разные форматы)
+      final map = {
+        'monday': 1,
+        'mon': 1,
+        'tuesday': 2,
+        'tue': 2,
+        'wednesday': 3,
+        'wed': 3,
+        'thursday': 4,
+        'thu': 4,
+        'friday': 5,
+        'fri': 5,
+        'saturday': 6,
+        'sat': 6,
+        'sunday': 7,
+        'sun': 7,
+      };
+      final key = s.toLowerCase().trim();
+      return map[key] ?? 99; // если не распознали — кладём в конец
+    }
+
+    workouts.sort((a, b) {
+      final ai = dayIndexFromString(a.dayOfWeek);
+      final bi = dayIndexFromString(b.dayOfWeek);
+      if (ai != bi) return ai.compareTo(bi);
+      // если в тот же день — сортируем по названию тренировки
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
 
     exercises = {};
     for (var w in workouts) {
@@ -34,8 +69,8 @@ class WorkoutProvider with ChangeNotifier {
             (e) => Exercise(
               id: e['id'],
               workoutId: e['workout_id'],
-              name: e['title'].toString(),
-              description: e['description'].toString(),
+              name: e['title']?.toString() ?? e['name']?.toString() ?? '',
+              description: e['description']?.toString() ?? '',
             ),
           )
           .toList();

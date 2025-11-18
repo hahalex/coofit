@@ -66,10 +66,19 @@ class _RegisterPageState extends State<RegisterPage> {
                   TextFormField(
                     controller: _usernameCtl,
                     decoration: const InputDecoration(labelText: 'Username'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Введите username'
-                        : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty)
+                        return 'Введите username';
+                      if (v.length > 20)
+                        return 'Username не должен превышать 20 символов';
+                      // Проверка на латиницу (A-Z, a-z, 0-9, подчеркивание)
+                      final regex = RegExp(r'^[a-zA-Z0-9_]+$');
+                      if (!regex.hasMatch(v))
+                        return 'Используйте только латинские буквы и цифры';
+                      return null;
+                    },
                   ),
+
                   TextFormField(
                     controller: _emailCtl,
                     decoration: const InputDecoration(labelText: 'Email'),

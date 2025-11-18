@@ -193,16 +193,15 @@ class _HomePageState extends State<HomePage> {
             appBar: AppBar(
               backgroundColor: Colors.white,
               elevation: 1,
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: Center(
-                  child: Text(
-                    'Привет, $username',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Привет, $username',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -218,6 +217,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+
             body: Column(
               children: [
                 const SizedBox(height: 12),
