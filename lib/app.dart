@@ -50,8 +50,8 @@ class _MyAppState extends State<MyApp> {
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Color(0xFF232323),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white60,
+          selectedItemColor: Color(0xFFFFC700), // цвет активного элемента
+          unselectedItemColor: Colors.white60, // цвет неактивных
         ),
       ),
 
@@ -62,12 +62,9 @@ class _MyAppState extends State<MyApp> {
 
       home: Consumer<AuthProvider>(
         builder: (context, auth, child) {
-          // показываем логин после первого фрейма, если не залогинен
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!auth.isLoggedIn && !_loginShown) {
               _loginShown = true;
-
-              // переход без анимации
               Navigator.of(context).push(
                 PageRouteBuilder(
                   pageBuilder: (_, __, ___) => const LoginPage(),
@@ -76,14 +73,11 @@ class _MyAppState extends State<MyApp> {
                 ),
               );
             }
-
             if (auth.isLoggedIn && _loginShown) {
               _loginShown = false;
             }
           });
 
-          // создаём страницы внутри build — это гарантирует, что при изменении AuthProvider
-          // HomePage будет пересоздана и сможет корректно инициализировать данные
           final pages = <Widget>[
             const WorkoutPage(),
             const StepPage(),
@@ -98,6 +92,10 @@ class _MyAppState extends State<MyApp> {
               currentIndex: _selectedIndex,
               onTap: (i) => setState(() => _selectedIndex = i),
               type: BottomNavigationBarType.fixed,
+              selectedItemColor: const Color(
+                0xFFFFC700,
+              ), // подсветка выбранного
+              unselectedItemColor: Colors.white60,
               items: const [
                 BottomNavigationBarItem(
                   icon: Icon(Icons.fitness_center),
