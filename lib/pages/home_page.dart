@@ -179,11 +179,7 @@ class _HomePageState extends State<HomePage> {
               elevation: 0,
               title: Text(
                 'Hi, $username',
-                style: const TextStyle(
-                  color: Color(0xFFFFC700),
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(color: Color(0xFFFFC700), fontSize: 30),
               ),
               actions: [
                 IconButton(

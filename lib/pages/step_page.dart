@@ -184,73 +184,53 @@ class _StepPageState extends State<StepPage> {
           style: TextStyle(color: Color(0xFFDB0058), fontSize: 28),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _loading
-              ? const CircularProgressIndicator()
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Today's Steps",
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Color(0xFFFFC700),
-                        fontWeight: FontWeight.w500,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  // ---- ВЕРХНЯЯ ПОЛОВИНА ----
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "Today's Steps",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Color(0xFFFFC700),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '$_todaySteps',
+                            style: const TextStyle(
+                              fontFamily: 'AllertaStencil',
+                              fontSize: 64,
+                              color: Color(0xFFFFC700),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Goal: $_goalSteps steps',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: const Color(0xFFFFC700).withOpacity(0.4),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '$_todaySteps',
-                      style: const TextStyle(
-                        fontFamily: 'AllertaStencil',
-                        fontSize: 64,
-                        color: Color(0xFFFFC700),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Goal: $_goalSteps steps',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: const Color(0xFFFFC700).withOpacity(0.4),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //   children: [
-                    //     ElevatedButton.icon(
-                    //       onPressed: () => _modifySteps(-1),
-                    //       icon: const Icon(Icons.remove),
-                    //       label: const Text('-1 step'),
-                    //     ),
-                    //     ElevatedButton.icon(
-                    //       onPressed: _manualAddStep,
-                    //       icon: const Icon(Icons.add),
-                    //       label: const Text('+1 step'),
-                    //     ),
-                    //     ElevatedButton(
-                    //       onPressed: () async {
-                    //         final auth = Provider.of<AuthProvider>(
-                    //           context,
-                    //           listen: false,
-                    //         );
-                    //         final u = auth.user;
-                    //         if (u == null) return;
-                    //         await _db.upsertDailyMetrics(u.id!, _today, steps: 0);
-                    //         await _loadProfileAndToday();
-                    //       },
-                    //       child: const Text('Reset today'),
-                    //     ),
-                    //   ],
-                    // ),
-                  ],
-                ),
-        ),
+                  ),
+
+                  // ---- НИЖНЯЯ ПОЛОВИНА (пока пустая) ----
+                  const Expanded(child: SizedBox()),
+                ],
+              ),
       ),
     );
   }
