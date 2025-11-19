@@ -1,4 +1,3 @@
-// lib/pages/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
@@ -20,7 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _heightCtl = TextEditingController();
   final _caloriesCtl = TextEditingController();
   final _waterCtl = TextEditingController();
-  final _stepsCtl = TextEditingController(); // <-- new
+  final _stepsCtl = TextEditingController();
 
   bool _loading = false;
   String? _error;
@@ -83,7 +82,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // ---- Dialogs for change email and password ----
-  // (unchanged methods from your original file)
   Future<void> _showChangeEmailDialog(int userId) async {
     final _dlgKey = GlobalKey<FormState>();
     String? _dlgError;
@@ -122,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 !RegExp(
                                   r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
                                 ).hasMatch(v.trim()))
-                            ? 'Неверный email'
+                            ? 'Invalid email'
                             : null,
                       ),
                       TextFormField(
@@ -132,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         obscureText: true,
                         validator: (v) => (v == null || v.isEmpty)
-                            ? 'Введите текущий пароль'
+                            ? 'Enter your current password'
                             : null,
                       ),
                     ],
@@ -175,11 +173,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           } catch (e) {
                             var msg = e.toString();
                             if (msg.contains('invalid_current_password'))
-                              msg = 'Неверный текущий пароль';
+                              msg = 'Incorrect current password';
                             if (msg.contains('email_taken'))
-                              msg = 'Этот email уже занят';
+                              msg = 'This email is already taken';
                             if (msg.contains('invalid_email_format'))
-                              msg = 'Неверный формат email';
+                              msg = 'Invalid email format';
                             setStateDlg(() {
                               _dlgError = msg;
                               _dlgLoading = false;
@@ -232,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         obscureText: true,
                         validator: (v) => (v == null || v.isEmpty)
-                            ? 'Введите текущий пароль'
+                            ? 'Enter your current password'
                             : null,
                       ),
                       TextFormField(
@@ -242,7 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         obscureText: true,
                         validator: (v) => (v == null || v.length < 6)
-                            ? 'Пароль должен быть >= 6 символов'
+                            ? 'Password must be >= 6 characters'
                             : null,
                       ),
                       TextFormField(
@@ -251,8 +249,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           labelText: 'Confirm new password',
                         ),
                         obscureText: true,
-                        validator: (v) =>
-                            (v != newCtl.text) ? 'Пароли не совпадают' : null,
+                        validator: (v) => (v != newCtl.text)
+                            ? 'The passwords dont match'
+                            : null,
                       ),
                     ],
                   ),
@@ -294,9 +293,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           } catch (e) {
                             var msg = e.toString();
                             if (msg.contains('invalid_current_password'))
-                              msg = 'Неверный текущий пароль';
+                              msg = 'Incorrect current password';
                             if (msg.contains('password_too_short'))
-                              msg = 'Новый пароль слишком короткий';
+                              msg = 'The new password is too short';
                             setStateDlg(() {
                               _dlgError = msg;
                               _dlgLoading = false;
@@ -331,12 +330,18 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFF232323),
       appBar: AppBar(
-        title: const Text('Profile'),
+        backgroundColor: const Color(0xFF232323),
+        centerTitle: true,
+        title: const Text(
+          'Profile',
+          style: TextStyle(color: Color(0xFFDB0058), fontSize: 28),
+        ),
         actions: [
           IconButton(
             tooltip: 'Logout',
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Color(0xFFDB0058)),
             onPressed: () async {
               await auth.logout();
             },
@@ -355,10 +360,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 8),
                     ],
                     Card(
+                      color: const Color(0xFF009999),
                       child: ListTile(
-                        title: Text(user.username),
-                        subtitle: Text(user.email),
-                        leading: const Icon(Icons.person),
+                        title: Text(
+                          user.username,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          user.email,
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                        leading: const Icon(Icons.person, color: Colors.white),
                         trailing: PopupMenuButton<String>(
                           onSelected: (v) {
                             if (v == 'change_email') {
@@ -392,13 +404,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             decoration: const InputDecoration(
                               labelText: 'Weight (kg)',
-                              hintText: 'e.g. 70.5',
+                              hintText: '70.5',
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return null;
                               final n = double.tryParse(v);
                               if (n == null || n <= 0)
-                                return 'Введите корректный вес';
+                                return 'Please enter the correct weight';
                               return null;
                             },
                           ),
@@ -410,13 +422,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             decoration: const InputDecoration(
                               labelText: 'Height (cm)',
-                              hintText: 'e.g. 175',
+                              hintText: '175',
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return null;
                               final n = double.tryParse(v);
                               if (n == null || n <= 0)
-                                return 'Введите корректный рост';
+                                return 'Please enter the correct height';
                               return null;
                             },
                           ),
@@ -431,7 +443,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               if (v == null || v.isEmpty) return null;
                               final n = int.tryParse(v);
                               if (n == null || n <= 0)
-                                return 'Введите корректное число калорий';
+                                return 'Please enter the correct number of calories';
                               return null;
                             },
                           ),
@@ -446,24 +458,23 @@ class _ProfilePageState extends State<ProfilePage> {
                               if (v == null || v.isEmpty) return null;
                               final n = int.tryParse(v);
                               if (n == null || n <= 0)
-                                return 'Введите корректное число';
+                                return 'Please enter a valid number';
                               return null;
                             },
                           ),
                           const SizedBox(height: 8),
-                          // NEW: daily steps target
                           TextFormField(
                             controller: _stepsCtl,
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Daily steps target',
-                              hintText: 'e.g. 5000',
+                              hintText: '5000',
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return null;
                               final n = int.tryParse(v);
                               if (n == null || n <= 0)
-                                return 'Введите корректное число шагов';
+                                return 'Please enter the correct number of steps.';
                               return null;
                             },
                           ),
@@ -471,6 +482,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           _loading
                               ? const CircularProgressIndicator()
                               : ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF009999),
+                                  ),
                                   onPressed: () => _save(user.id!),
                                   child: const Text('Save'),
                                 ),

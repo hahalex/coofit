@@ -27,24 +27,53 @@ class WorkoutPageContent extends StatelessWidget {
     final prov = Provider.of<WorkoutProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Workouts')),
+      backgroundColor: const Color(0xFF232323),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF232323),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Workout',
+          style: TextStyle(color: Color(0xFFDB0058), fontSize: 28),
+        ),
+      ),
       body: ListView.builder(
+        padding: const EdgeInsets.all(12),
         itemCount: prov.workouts.length,
         itemBuilder: (ctx, idx) {
           final w = prov.workouts[idx];
           final exercises = prov.exercises[w.id!] ?? [];
           return Card(
-            margin: const EdgeInsets.all(8),
+            color: const Color(0xFF009999),
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: ExpansionTile(
-              title: Text('${w.dayOfWeek}: ${w.name}'),
-              subtitle: Text(w.description),
+              title: Text(
+                '${w.dayOfWeek}: ${w.name}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                w.description,
+                style: const TextStyle(color: Colors.white),
+              ),
               children: [
                 ...exercises.map(
                   (e) => ListTile(
-                    title: Text(e.name),
-                    subtitle: Text(e.description),
+                    title: Text(
+                      e.name,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      e.description,
+                      style: const TextStyle(color: Colors.white),
+                    ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Icon(Icons.delete, color: Color(0xFF232323)),
                       onPressed: () => prov.deleteExercise(e.id!),
                     ),
                   ),
@@ -54,14 +83,17 @@ class WorkoutPageContent extends StatelessWidget {
                   children: [
                     TextButton(
                       onPressed: () => _showAddExerciseDialog(context, w.id!),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFFFC700),
+                      ),
                       child: const Text('Add Exercise'),
                     ),
                     TextButton(
                       onPressed: () => prov.deleteWorkout(w.id!),
-                      child: const Text(
-                        'Delete Workout',
-                        style: TextStyle(color: Colors.red),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF232323),
                       ),
+                      child: const Text('Delete Workout'),
                     ),
                   ],
                 ),
@@ -71,8 +103,9 @@ class WorkoutPageContent extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF009999),
         onPressed: () => _showAddWorkoutDialog(context, prov),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -194,7 +227,10 @@ class WorkoutPageContent extends StatelessWidget {
               prov.addExercise(e);
               Navigator.of(ctx).pop();
             },
-            child: const Text('Add'),
+            child: const Text(
+              'Add',
+              style: TextStyle(color: Color(0xFFFFC700)),
+            ),
           ),
         ],
       ),
