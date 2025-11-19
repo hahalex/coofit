@@ -20,7 +20,13 @@ class DBService {
   Future<Database> _initDB() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, 'fitness_tracker.db');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    // bump version to 2 to apply schema updates (target_steps + daily metrics)
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   Future _onCreate(Database db, int version) async {
@@ -43,6 +49,7 @@ class DBService {
         height REAL,
         daily_calories INTEGER DEFAULT 1500,
         water_glasses INTEGER DEFAULT 8,
+        target_steps INTEGER DEFAULT 5000,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
       );
     ''');
@@ -68,6 +75,47 @@ class DBService {
         FOREIGN KEY(workout_id) REFERENCES workouts(id) ON DELETE CASCADE
       );
     ''');
+
+    // новая таблица для ежедневных метрик (одна строка на user+date)
+    await db.execute('''
+      CREATE TABLE user_daily_metrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        calories INTEGER DEFAULT 0,
+        water_glasses INTEGER DEFAULT 0,
+        steps INTEGER DEFAULT 0,
+        UNIQUE(user_id, date),
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+    ''');
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // add target_steps to user_profiles if missing
+      try {
+        await db.execute(
+          "ALTER TABLE user_profiles ADD COLUMN target_steps INTEGER DEFAULT 5000;",
+        );
+      } catch (_) {
+        // ignore if already exists
+      }
+
+      // create daily metrics table if not exists
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS user_daily_metrics (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          calories INTEGER DEFAULT 0,
+          water_glasses INTEGER DEFAULT 0,
+          steps INTEGER DEFAULT 0,
+          UNIQUE(user_id, date),
+          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+      ''');
+    }
   }
 
   // --- Users CRUD ---
@@ -110,6 +158,7 @@ class DBService {
       'height': null,
       'daily_calories': 1500,
       'water_glasses': 8,
+      'target_steps': 5000,
     });
   }
 
@@ -137,7 +186,7 @@ class DBService {
   // --- update user email ---
   Future<int> updateUserEmail(int userId, String newEmail) async {
     final db = await database;
-    return await db.update(
+    return db.update(
       'users',
       {'email': newEmail},
       where: 'id = ?',
@@ -152,7 +201,7 @@ class DBService {
     String newSalt,
   ) async {
     final db = await database;
-    return await db.update(
+    return db.update(
       'users',
       {'password_hash': newHash, 'salt': newSalt},
       where: 'id = ?',
@@ -160,18 +209,78 @@ class DBService {
     );
   }
 
-  // Generic update user (optional)
-  Future<int> updateUserFields(int userId, Map<String, dynamic> values) async {
+  // --- Daily metrics helpers ---
+  // date in format 'yyyy-MM-dd'
+  Future<Map<String, dynamic>?> getDailyMetrics(int userId, String date) async {
     final db = await database;
-    return await db.update(
-      'users',
-      values,
-      where: 'id = ?',
-      whereArgs: [userId],
+    final res = await db.query(
+      'user_daily_metrics',
+      where: 'user_id = ? AND date = ?',
+      whereArgs: [userId, date],
+    );
+    if (res.isEmpty) return null;
+    return res.first;
+  }
+
+  Future<int> insertDailyMetrics(
+    int userId,
+    String date, {
+    int calories = 0,
+    int waterGlasses = 0,
+    int steps = 0,
+  }) async {
+    final db = await database;
+    return await db.insert('user_daily_metrics', {
+      'user_id': userId,
+      'date': date,
+      'calories': calories,
+      'water_glasses': waterGlasses,
+      'steps': steps,
+    });
+  }
+
+  Future<int> upsertDailyMetrics(
+    int userId,
+    String date, {
+    int? calories,
+    int? waterGlasses,
+    int? steps,
+  }) async {
+    final db = await database;
+    final existing = await getDailyMetrics(userId, date);
+    if (existing == null) {
+      return await insertDailyMetrics(
+        userId,
+        date,
+        calories: calories ?? 0,
+        waterGlasses: waterGlasses ?? 0,
+        steps: steps ?? 0,
+      );
+    } else {
+      final values = <String, dynamic>{};
+      if (calories != null) values['calories'] = calories;
+      if (waterGlasses != null) values['water_glasses'] = waterGlasses;
+      if (steps != null) values['steps'] = steps;
+      if (values.isEmpty) return 0;
+      return await db.update(
+        'user_daily_metrics',
+        values,
+        where: 'user_id = ? AND date = ?',
+        whereArgs: [userId, date],
+      );
+    }
+  }
+
+  Future<int> deleteDailyMetrics(int userId, String date) async {
+    final db = await database;
+    return await db.delete(
+      'user_daily_metrics',
+      where: 'user_id = ? AND date = ?',
+      whereArgs: [userId, date],
     );
   }
 
-  // --- Workouts ---
+  // --- Workouts & Exercises ---
   Future<int> insertWorkout(Map<String, dynamic> workoutMap) async {
     final db = await database;
     return db.insert('workouts', workoutMap);
@@ -198,11 +307,10 @@ class DBService {
       'exercises',
       where: 'workout_id = ?',
       whereArgs: [workoutId],
-    ); // удаляем упражнения
+    );
     return db.delete('workouts', where: 'id = ?', whereArgs: [workoutId]);
   }
 
-  // --- Exercises ---
   Future<int> insertExercise(Map<String, dynamic> exerciseMap) async {
     final db = await database;
     return db.insert('exercises', exerciseMap);

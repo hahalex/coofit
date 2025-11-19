@@ -20,6 +20,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _heightCtl = TextEditingController();
   final _caloriesCtl = TextEditingController();
   final _waterCtl = TextEditingController();
+  final _stepsCtl = TextEditingController(); // <-- new
 
   bool _loading = false;
   String? _error;
@@ -33,11 +34,12 @@ class _ProfilePageState extends State<ProfilePage> {
         _heightCtl.text = map['height']?.toString() ?? '';
         _caloriesCtl.text = (map['daily_calories'] ?? 1500).toString();
         _waterCtl.text = (map['water_glasses'] ?? 8).toString();
+        _stepsCtl.text = (map['target_steps'] ?? 5000).toString();
         _initialized = true;
       });
     } else {
       await _db.createProfile(userId);
-      _loadProfile(userId);
+      await _loadProfile(userId);
     }
   }
 
@@ -57,6 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
             : double.tryParse(_heightCtl.text),
         'daily_calories': int.tryParse(_caloriesCtl.text) ?? 1500,
         'water_glasses': int.tryParse(_waterCtl.text) ?? 8,
+        'target_steps': int.tryParse(_stepsCtl.text) ?? 5000,
       };
       await _db.updateProfile(userId, values);
       ScaffoldMessenger.of(
@@ -75,11 +78,12 @@ class _ProfilePageState extends State<ProfilePage> {
     _heightCtl.dispose();
     _caloriesCtl.dispose();
     _waterCtl.dispose();
+    _stepsCtl.dispose();
     super.dispose();
   }
 
   // ---- Dialogs for change email and password ----
-
+  // (unchanged methods from your original file)
   Future<void> _showChangeEmailDialog(int userId) async {
     final _dlgKey = GlobalKey<FormState>();
     String? _dlgError;
@@ -443,6 +447,23 @@ class _ProfilePageState extends State<ProfilePage> {
                               final n = int.tryParse(v);
                               if (n == null || n <= 0)
                                 return 'Введите корректное число';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          // NEW: daily steps target
+                          TextFormField(
+                            controller: _stepsCtl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Daily steps target',
+                              hintText: 'e.g. 5000',
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return null;
+                              final n = int.tryParse(v);
+                              if (n == null || n <= 0)
+                                return 'Введите корректное число шагов';
                               return null;
                             },
                           ),
