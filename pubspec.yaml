@@ -31,6 +31,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  pedometer: any
+  permission_handler: any
+
+
   # SQLite
   sqflite: ^2.2.8
   path_provider: ^2.0.14
