@@ -142,7 +142,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final auth = Provider.of<AuthProvider>(
+      context,
+    ); // listen: true по умолчанию
     final user = auth.user;
     final username = user?.username ?? 'Пользователь';
 
@@ -150,9 +152,9 @@ class _HomePageState extends State<HomePage> {
     // you can instead read it directly. Here we create a provider instance (non-global)
     // so Home can load workouts for the current user.
     return ChangeNotifierProvider<WorkoutProvider>(
+      key: ValueKey('wp-${user?.id ?? -1}'),
       create: (_) {
         final wp = WorkoutProvider(user?.id ?? -1);
-        // only load if user exists
         if (user != null) wp.loadWorkouts();
         return wp;
       },

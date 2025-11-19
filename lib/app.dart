@@ -62,6 +62,7 @@ class _MyAppState extends State<MyApp> {
 
       home: Consumer<AuthProvider>(
         builder: (context, auth, child) {
+          // показываем логин после первого фрейма, если не залогинен
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!auth.isLoggedIn && !_loginShown) {
               _loginShown = true;
@@ -81,8 +82,18 @@ class _MyAppState extends State<MyApp> {
             }
           });
 
+          // создаём страницы внутри build — это гарантирует, что при изменении AuthProvider
+          // HomePage будет пересоздана и сможет корректно инициализировать данные
+          final pages = <Widget>[
+            const WorkoutPage(),
+            const StepPage(),
+            HomePage(), // НЕ const — важно, чтобы HomePage пересоздавалась
+            const ProfilePage(),
+            const FoodPage(),
+          ];
+
           return Scaffold(
-            body: _pages[_selectedIndex],
+            body: pages[_selectedIndex],
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: (i) => setState(() => _selectedIndex = i),
