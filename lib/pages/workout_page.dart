@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
@@ -116,69 +118,147 @@ class WorkoutPageContent extends StatelessWidget {
     final descCtl = TextEditingController();
     String day = 'Monday';
 
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add Workout'),
-        content: Form(
-          key: _key,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  value: day,
-                  items:
-                      [
-                            'Monday',
-                            'Tuesday',
-                            'Wednesday',
-                            'Thursday',
-                            'Friday',
-                            'Saturday',
-                            'Sunday',
-                          ]
-                          .map(
-                            (d) => DropdownMenuItem(value: d, child: Text(d)),
-                          )
-                          .toList(),
-                  onChanged: (v) => day = v!,
-                  decoration: const InputDecoration(labelText: 'Day of week'),
+      barrierDismissible: true,
+      barrierLabel: 'Add Workout',
+      barrierColor: Colors.transparent,
+      pageBuilder: (ctx, anim1, anim2) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF232323),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF009999), width: 2),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: Form(
+                  key: _key,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Add Workout',
+                          style: TextStyle(
+                            color: Color(0xFFFFC700),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          value: day,
+                          items:
+                              [
+                                    'Monday',
+                                    'Tuesday',
+                                    'Wednesday',
+                                    'Thursday',
+                                    'Friday',
+                                    'Saturday',
+                                    'Sunday',
+                                  ]
+                                  .map(
+                                    (d) => DropdownMenuItem(
+                                      value: d,
+                                      child: Text(
+                                        d,
+                                        style: const TextStyle(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            255,
+                                            255,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (v) => day = v!,
+                          decoration: const InputDecoration(
+                            labelText: 'Day of week',
+                            labelStyle: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextFormField(
+                          controller: nameCtl,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Workout Name',
+                            labelStyle: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          ),
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Required' : null,
+                        ),
+                        TextFormField(
+                          controller: descCtl,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Description',
+                            labelStyle: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Color(0xFFDB0058)),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                if (!_key.currentState!.validate()) return;
+                                final w = Workout(
+                                  userId: prov.userId,
+                                  dayOfWeek: day,
+                                  name: nameCtl.text,
+                                  description: descCtl.text,
+                                );
+                                prov.addWorkout(w);
+                                Navigator.of(ctx).pop();
+                              },
+                              child: const Text(
+                                'Add',
+                                style: TextStyle(color: Color(0xFFFFC700)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                TextFormField(
-                  controller: nameCtl,
-                  decoration: const InputDecoration(labelText: 'Workout Name'),
-                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                ),
-                TextFormField(
-                  controller: descCtl,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (!_key.currentState!.validate()) return;
-              final w = Workout(
-                userId: prov.userId,
-                dayOfWeek: day,
-                name: nameCtl.text,
-                description: descCtl.text,
-              );
-              prov.addWorkout(w);
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -188,52 +268,94 @@ class WorkoutPageContent extends StatelessWidget {
     final descCtl = TextEditingController();
     final prov = Provider.of<WorkoutProvider>(context, listen: false);
 
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add Exercise'),
-        content: Form(
-          key: _key,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameCtl,
-                  decoration: const InputDecoration(labelText: 'Exercise Name'),
-                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+      barrierDismissible: true,
+      barrierLabel: 'Add Exercise',
+      barrierColor: Colors.transparent,
+      pageBuilder: (ctx, anim1, anim2) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF232323),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF009999), width: 2),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: Form(
+                  key: _key,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Add Exercise',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFFC700),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: nameCtl,
+                          decoration: const InputDecoration(
+                            labelText: 'Exercise Name',
+                            labelStyle: TextStyle(color: Colors.white),
+                          ),
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Required' : null,
+                        ),
+                        TextFormField(
+                          controller: descCtl,
+                          decoration: const InputDecoration(
+                            labelText: 'Description',
+                            labelStyle: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Color(0xFFDB0058)),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                if (!_key.currentState!.validate()) return;
+                                final e = Exercise(
+                                  workoutId: workoutId,
+                                  name: nameCtl.text,
+                                  description: descCtl.text,
+                                );
+                                prov.addExercise(e);
+                                Navigator.of(ctx).pop();
+                              },
+                              child: const Text(
+                                'Add',
+                                style: TextStyle(color: Color(0xFFFFC700)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                TextFormField(
-                  controller: descCtl,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (!_key.currentState!.validate()) return;
-              final e = Exercise(
-                workoutId: workoutId,
-                name: nameCtl.text,
-                description: descCtl.text,
-              );
-              prov.addExercise(e);
-              Navigator.of(ctx).pop();
-            },
-            child: const Text(
-              'Add',
-              style: TextStyle(color: Color(0xFFFFC700)),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -31,9 +31,18 @@ class _RegisterPageState extends State<RegisterPage> {
         _emailCtl.text.trim(),
         _passwordCtl.text,
       );
-      Navigator.of(context).pop(); // после регистрации возвращаемся к логину
+      Navigator.of(
+        context,
+      ).pop(); // после успешной регистрации возвращаемся к логину
     } catch (e) {
-      setState(() => _error = e.toString());
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('already exists') ||
+          errorMsg.contains('user exists') ||
+          errorMsg.contains('duplicate')) {
+        setState(() => _error = "No way! You already have an account!");
+      } else {
+        setState(() => _error = "No way! You already have an account!");
+      }
     } finally {
       setState(() => _loading = false);
     }
@@ -111,7 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
 
-            // Полоса на всю ширину экрана с формой
+            // Полоса с формой
             Container(
               width: double.infinity,
               color: const Color(0xFF009999),
@@ -125,10 +134,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       hint: 'Username',
                       validator: (v) {
                         if (v == null || v.trim().isEmpty)
-                          return 'Введите username';
-                        if (v.length > 20) return 'Не больше 20 символов';
+                          return 'Enter username';
+                        if (v.length > 20) return 'No more than 20 characters';
                         if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(v)) {
-                          return 'Только латиница и цифры';
+                          return 'Only latin and numbers';
                         }
                         return null;
                       },
@@ -139,7 +148,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       hint: 'Email',
                       validator: (v) =>
                           (v == null || !EmailValidator.validate(v.trim()))
-                          ? 'Неверный email'
+                          ? 'Enter the correct email address'
                           : null,
                     ),
                     const SizedBox(height: 20),
@@ -148,9 +157,23 @@ class _RegisterPageState extends State<RegisterPage> {
                       hint: 'Password',
                       obscure: true,
                       validator: (v) => (v == null || v.length < 6)
-                          ? 'Пароль ≥ 6 символов'
+                          ? 'Password must be ≥ 6 characters'
                           : null,
                     ),
+                    // Блок для отображения ошибки
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -160,9 +183,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
             // Кнопка Sign Up
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-              ), // такой же паддинг, как у полей
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: _loading
                   ? const CircularProgressIndicator(color: Color(0xFFDB0058))
                   : GestureDetector(
@@ -192,7 +213,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
 
             const SizedBox(height: 10),
-
             const Text(
               "Already have an account?",
               style: TextStyle(
@@ -201,8 +221,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 color: Color(0xFF009999),
               ),
             ),
-
-            // const SizedBox(height: 8),
             GestureDetector(
               onTap: () => Navigator.of(
                 context,
@@ -216,7 +234,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
           ],
         ),
@@ -233,10 +250,10 @@ class _RegisterPageState extends State<RegisterPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
-      cursorColor: const Color(0xFF009999), // курсор такого же цвета
+      cursorColor: const Color(0xFF009999),
       style: const TextStyle(
-        color: Color(0xFF009999), // текст
-        fontFamily: 'InriaSans-Bold',
+        color: Color(0xFF009999),
+        fontFamily: 'InriaSans-Regular',
         fontSize: 20,
       ),
       decoration: InputDecoration(
@@ -244,10 +261,11 @@ class _RegisterPageState extends State<RegisterPage> {
         fillColor: Colors.white70,
         hintText: hint,
         hintStyle: const TextStyle(
-          color: Color(0xFF009999), // цвет подсказки
-          fontFamily: 'InriaSans-Bold',
+          color: Color(0xFF009999),
+          fontFamily: 'InriaSans-Regular',
           fontSize: 20,
         ),
+        errorStyle: const TextStyle(color: Colors.white, fontSize: 16),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 16,

@@ -27,7 +27,8 @@ class _LoginPageState extends State<LoginPage> {
       ).login(_idCtl.text.trim(), _passwordCtl.text);
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
-      setState(() => _error = e.toString());
+      // Вместо e.toString() показываем дружелюбное сообщение
+      setState(() => _error = "Oops! There are no such people here!");
     } finally {
       setState(() => _loading = false);
     }
@@ -66,7 +67,6 @@ class _LoginPageState extends State<LoginPage> {
                   color: Colors.white,
                 ),
               ),
-              // const SizedBox(height: 4),
               ShaderMask(
                 shaderCallback: (Rect bounds) => const LinearGradient(
                   colors: [
@@ -86,7 +86,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              // const SizedBox(height: 2),
               const Text(
                 'Welcome to Cool Fit!\nGlad to see you again!',
                 textAlign: TextAlign.center,
@@ -98,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 40),
 
-              // Полоса цвета #009999 по всей ширине экрана
+              // Полоса цвета #009999 с формой
               Container(
                 width: double.infinity,
                 color: const Color(0xFF009999),
@@ -126,6 +125,20 @@ class _LoginPageState extends State<LoginPage> {
                           obscure: true,
                         ),
                       ),
+                      // Отображение ошибки авторизации
+                      if (_error != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -173,7 +186,6 @@ class _LoginPageState extends State<LoginPage> {
                   color: Color(0xFF009999),
                 ),
               ),
-              // const SizedBox(height: 4),
               GestureDetector(
                 onTap: () => Navigator.of(
                   context,
@@ -202,10 +214,10 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
-      cursorColor: const Color(0xFF009999), // ← курсор такого же цвета
+      cursorColor: const Color(0xFF009999),
       style: const TextStyle(
-        color: Color(0xFF009999), // текст
-        fontFamily: 'InriaSans-Bold',
+        color: Color(0xFF009999),
+        fontFamily: 'InriaSans-Regular',
         fontSize: 20,
       ),
       decoration: InputDecoration(
@@ -213,10 +225,11 @@ class _LoginPageState extends State<LoginPage> {
         fillColor: Colors.white70,
         hintText: hint,
         hintStyle: const TextStyle(
-          color: Color(0xFF009999), // подсказка
+          color: Color(0xFF009999),
           fontFamily: 'InriaSans-Bold',
           fontSize: 20,
         ),
+        errorStyle: const TextStyle(color: Colors.white, fontSize: 16),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 16,
@@ -226,8 +239,9 @@ class _LoginPageState extends State<LoginPage> {
           borderSide: BorderSide.none,
         ),
       ),
-      validator: (v) =>
-          (v == null || v.trim().isEmpty) ? 'Поле не может быть пустым' : null,
+      validator: (v) => (v == null || v.trim().isEmpty)
+          ? 'Please enter your login details'
+          : null,
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
@@ -81,114 +83,204 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  // ---- Dialogs for change email and password ----
+  // ---- Dialogs ----
+  Future<void> _showOptionDialog(int userId) async {
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Options',
+      barrierColor: Colors.transparent,
+      pageBuilder: (ctx, anim1, anim2) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF232323),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF009999), width: 2),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Profile Options',
+                      style: TextStyle(
+                        color: Color(0xFFFFC700),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _showChangeEmailDialog(userId);
+                      },
+                      child: const Text('Change email'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _showChangePasswordDialog(userId);
+                      },
+                      child: const Text('Change password'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _showChangeEmailDialog(int userId) async {
     final _dlgKey = GlobalKey<FormState>();
     String? _dlgError;
     bool _dlgLoading = false;
 
-    await showDialog(
+    await showGeneralDialog(
       context: context,
-      builder: (ctx) {
+      barrierDismissible: true,
+      barrierLabel: 'Change Email',
+      barrierColor: Colors.transparent,
+      pageBuilder: (ctx, anim1, anim2) {
         final emailCtl = TextEditingController();
         final passCtl = TextEditingController();
+        final auth = Provider.of<AuthProvider>(context, listen: false);
 
-        return StatefulBuilder(
-          builder: (ctx2, setStateDlg) {
-            return AlertDialog(
-              title: const Text('Change email'),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: _dlgKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_dlgError != null) ...[
-                        Text(
-                          _dlgError!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      TextFormField(
-                        controller: emailCtl,
-                        decoration: const InputDecoration(
-                          labelText: 'New email',
-                        ),
-                        validator: (v) =>
-                            (v == null ||
-                                !RegExp(
-                                  r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
-                                ).hasMatch(v.trim()))
-                            ? 'Invalid email'
-                            : null,
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF232323),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF009999), width: 2),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: StatefulBuilder(
+                  builder: (ctx2, setStateDlg) => Form(
+                    key: _dlgKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Change email',
+                            style: TextStyle(
+                              color: Color(0xFFFFC700),
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          if (_dlgError != null) ...[
+                            Text(
+                              _dlgError!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          TextFormField(
+                            controller: emailCtl,
+                            decoration: const InputDecoration(
+                              labelText: 'New email',
+                            ),
+                            validator: (v) =>
+                                (v == null ||
+                                    !EmailValidator.validate(v.trim()))
+                                ? 'Invalid email'
+                                : null,
+                          ),
+                          TextFormField(
+                            controller: passCtl,
+                            decoration: const InputDecoration(
+                              labelText: 'Current password',
+                            ),
+                            obscureText: true,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Enter your current password'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx2).pop(),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(color: Color(0xFFDB0058)),
+                                ),
+                              ),
+                              _dlgLoading
+                                  ? const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : TextButton(
+                                      onPressed: () async {
+                                        if (!_dlgKey.currentState!.validate())
+                                          return;
+                                        setStateDlg(() {
+                                          _dlgError = null;
+                                          _dlgLoading = true;
+                                        });
+                                        try {
+                                          await auth.changeEmail(
+                                            currentPassword: passCtl.text,
+                                            newEmail: emailCtl.text.trim(),
+                                          );
+                                          Navigator.of(ctx2).pop();
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Email updated'),
+                                            ),
+                                          );
+                                        } catch (e) {
+                                          setStateDlg(() {
+                                            _dlgError = e.toString();
+                                            _dlgLoading = false;
+                                          });
+                                        }
+                                      },
+                                      child: const Text(
+                                        'Change',
+                                        style: TextStyle(
+                                          color: Color(0xFFFFC700),
+                                        ),
+                                      ),
+                                    ),
+                            ],
+                          ),
+                        ],
                       ),
-                      TextFormField(
-                        controller: passCtl,
-                        decoration: const InputDecoration(
-                          labelText: 'Current password',
-                        ),
-                        obscureText: true,
-                        validator: (v) => (v == null || v.isEmpty)
-                            ? 'Enter your current password'
-                            : null,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx2).pop(),
-                  child: const Text('Cancel'),
-                ),
-                _dlgLoading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : TextButton(
-                        onPressed: () async {
-                          if (!_dlgKey.currentState!.validate()) return;
-                          setStateDlg(() {
-                            _dlgError = null;
-                            _dlgLoading = true;
-                          });
-                          try {
-                            await Provider.of<AuthProvider>(
-                              context,
-                              listen: false,
-                            ).changeEmail(
-                              currentPassword: passCtl.text,
-                              newEmail: emailCtl.text.trim(),
-                            );
-                            Navigator.of(ctx2).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Email updated')),
-                            );
-                          } catch (e) {
-                            var msg = e.toString();
-                            if (msg.contains('invalid_current_password'))
-                              msg = 'Incorrect current password';
-                            if (msg.contains('email_taken'))
-                              msg = 'This email is already taken';
-                            if (msg.contains('invalid_email_format'))
-                              msg = 'Invalid email format';
-                            setStateDlg(() {
-                              _dlgError = msg;
-                              _dlgLoading = false;
-                            });
-                          }
-                        },
-                        child: const Text('Change'),
-                      ),
-              ],
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -199,114 +291,152 @@ class _ProfilePageState extends State<ProfilePage> {
     String? _dlgError;
     bool _dlgLoading = false;
 
-    await showDialog(
+    await showGeneralDialog(
       context: context,
-      builder: (ctx) {
+      barrierDismissible: true,
+      barrierLabel: 'Change Password',
+      barrierColor: Colors.transparent,
+      pageBuilder: (ctx, anim1, anim2) {
         final currentCtl = TextEditingController();
         final newCtl = TextEditingController();
         final confirmCtl = TextEditingController();
+        final auth = Provider.of<AuthProvider>(context, listen: false);
 
-        return StatefulBuilder(
-          builder: (ctx2, setStateDlg) {
-            return AlertDialog(
-              title: const Text('Change password'),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: _dlgKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_dlgError != null) ...[
-                        Text(
-                          _dlgError!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      TextFormField(
-                        controller: currentCtl,
-                        decoration: const InputDecoration(
-                          labelText: 'Current password',
-                        ),
-                        obscureText: true,
-                        validator: (v) => (v == null || v.isEmpty)
-                            ? 'Enter your current password'
-                            : null,
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF232323),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF009999), width: 2),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: StatefulBuilder(
+                  builder: (ctx2, setStateDlg) => Form(
+                    key: _dlgKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Change password',
+                            style: TextStyle(
+                              color: Color(0xFFFFC700),
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          if (_dlgError != null) ...[
+                            Text(
+                              _dlgError!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          TextFormField(
+                            controller: currentCtl,
+                            decoration: const InputDecoration(
+                              labelText: 'Current password',
+                            ),
+                            obscureText: true,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Enter your current password'
+                                : null,
+                          ),
+                          TextFormField(
+                            controller: newCtl,
+                            decoration: const InputDecoration(
+                              labelText: 'New password',
+                            ),
+                            obscureText: true,
+                            validator: (v) => (v == null || v.length < 6)
+                                ? 'Password must be >= 6 characters'
+                                : null,
+                          ),
+                          TextFormField(
+                            controller: confirmCtl,
+                            decoration: const InputDecoration(
+                              labelText: 'Confirm new password',
+                            ),
+                            obscureText: true,
+                            validator: (v) => (v != newCtl.text)
+                                ? 'Passwords do not match'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx2).pop(),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(color: Color(0xFFDB0058)),
+                                ),
+                              ),
+                              _dlgLoading
+                                  ? const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : TextButton(
+                                      onPressed: () async {
+                                        if (!_dlgKey.currentState!.validate())
+                                          return;
+                                        setStateDlg(() {
+                                          _dlgError = null;
+                                          _dlgLoading = true;
+                                        });
+                                        try {
+                                          await auth.changePassword(
+                                            currentPassword: currentCtl.text,
+                                            newPassword: newCtl.text,
+                                          );
+                                          Navigator.of(ctx2).pop();
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Password updated'),
+                                            ),
+                                          );
+                                        } catch (e) {
+                                          setStateDlg(() {
+                                            _dlgError = e.toString();
+                                            _dlgLoading = false;
+                                          });
+                                        }
+                                      },
+                                      child: const Text(
+                                        'Change',
+                                        style: TextStyle(
+                                          color: Color(0xFFFFC700),
+                                        ),
+                                      ),
+                                    ),
+                            ],
+                          ),
+                        ],
                       ),
-                      TextFormField(
-                        controller: newCtl,
-                        decoration: const InputDecoration(
-                          labelText: 'New password',
-                        ),
-                        obscureText: true,
-                        validator: (v) => (v == null || v.length < 6)
-                            ? 'Password must be >= 6 characters'
-                            : null,
-                      ),
-                      TextFormField(
-                        controller: confirmCtl,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm new password',
-                        ),
-                        obscureText: true,
-                        validator: (v) => (v != newCtl.text)
-                            ? 'The passwords dont match'
-                            : null,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx2).pop(),
-                  child: const Text('Cancel'),
-                ),
-                _dlgLoading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : TextButton(
-                        onPressed: () async {
-                          if (!_dlgKey.currentState!.validate()) return;
-                          setStateDlg(() {
-                            _dlgError = null;
-                            _dlgLoading = true;
-                          });
-                          try {
-                            await Provider.of<AuthProvider>(
-                              context,
-                              listen: false,
-                            ).changePassword(
-                              currentPassword: currentCtl.text,
-                              newPassword: newCtl.text,
-                            );
-                            Navigator.of(ctx2).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Password updated')),
-                            );
-                          } catch (e) {
-                            var msg = e.toString();
-                            if (msg.contains('invalid_current_password'))
-                              msg = 'Incorrect current password';
-                            if (msg.contains('password_too_short'))
-                              msg = 'The new password is too short';
-                            setStateDlg(() {
-                              _dlgError = msg;
-                              _dlgLoading = false;
-                            });
-                          }
-                        },
-                        child: const Text('Change'),
-                      ),
-              ],
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -371,24 +501,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           style: const TextStyle(color: Colors.white70),
                         ),
                         leading: const Icon(Icons.person, color: Colors.white),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (v) {
-                            if (v == 'change_email') {
-                              _showChangeEmailDialog(user.id!);
-                            } else if (v == 'change_password') {
-                              _showChangePasswordDialog(user.id!);
-                            }
-                          },
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                              value: 'change_email',
-                              child: Text('Change email'),
-                            ),
-                            PopupMenuItem(
-                              value: 'change_password',
-                              child: Text('Change password'),
-                            ),
-                          ],
+                        trailing: IconButton(
+                          icon: const Icon(Icons.settings, color: Colors.white),
+                          onPressed: () => _showOptionDialog(user.id!),
                         ),
                       ),
                     ),
@@ -399,38 +514,24 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           TextFormField(
                             controller: _weightCtl,
-                            keyboardType: TextInputType.numberWithOptions(
+                            keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
                             decoration: const InputDecoration(
                               labelText: 'Weight (kg)',
                               hintText: '70.5',
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return null;
-                              final n = double.tryParse(v);
-                              if (n == null || n <= 0)
-                                return 'Please enter the correct weight';
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _heightCtl,
-                            keyboardType: TextInputType.numberWithOptions(
+                            keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
                             decoration: const InputDecoration(
                               labelText: 'Height (cm)',
                               hintText: '175',
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return null;
-                              final n = double.tryParse(v);
-                              if (n == null || n <= 0)
-                                return 'Please enter the correct height';
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -439,13 +540,6 @@ class _ProfilePageState extends State<ProfilePage> {
                             decoration: const InputDecoration(
                               labelText: 'Daily calories',
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return null;
-                              final n = int.tryParse(v);
-                              if (n == null || n <= 0)
-                                return 'Please enter the correct number of calories';
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -454,13 +548,6 @@ class _ProfilePageState extends State<ProfilePage> {
                             decoration: const InputDecoration(
                               labelText: 'Glasses of water per day',
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return null;
-                              final n = int.tryParse(v);
-                              if (n == null || n <= 0)
-                                return 'Please enter a valid number';
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -470,13 +557,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               labelText: 'Daily steps target',
                               hintText: '5000',
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return null;
-                              final n = int.tryParse(v);
-                              if (n == null || n <= 0)
-                                return 'Please enter the correct number of steps.';
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 16),
                           _loading

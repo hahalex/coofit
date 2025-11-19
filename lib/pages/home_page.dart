@@ -272,7 +272,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
                 const Center(
                   child: Text(
                     'Workouts for today',
