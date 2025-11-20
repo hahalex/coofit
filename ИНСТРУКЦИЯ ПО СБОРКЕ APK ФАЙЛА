@@ -1,0 +1,41 @@
+Инструкция по сборке APK-файла приложения CoolFit
+
+1. Перейти в репозиторий проекта
+   Зайти на GitHub по ссылке:
+   [https://github.com/hahalex/coofit.git](https://github.com/hahalex/coofit.git)
+
+2. Скачать проект
+   Есть два варианта:
+
+   * Скачать ZIP-архив: нажать кнопку Code → Download ZIP → распаковать архив.
+   * Клонировать репозиторий через Git командой:
+     git clone [https://github.com/hahalex/coofit.git](https://github.com/hahalex/coofit.git)
+
+3. Перейти в папку проекта
+   В терминале открыть директорию, где находится проект, и выполнить:
+   cd coofit
+
+4. Установить зависимости Flutter
+   Выполнить команду:
+   flutter pub get
+   Эта команда скачает все необходимые библиотеки, указанные в файле pubspec.yaml.
+
+5. Проверить корректность установки Flutter
+   Выполнить команду:
+   flutter doctor
+   Убедиться, что Android SDK установлен и инструмент сборки настроен.
+
+6. Собрать APK-файл
+   Для стандартной сборки APK выполнить:
+   flutter build apk
+   После сборки файл появится по пути:
+   build/app/outputs/flutter-apk/app-release.apk
+
+7. (Опционально) Собрать APK отдельно для разных архитектур процессора
+   Эта команда уменьшает размер файла:
+   flutter build apk --split-per-abi
+   Будут созданы файлы:
+
+   * app-armeabi-v7a-release.apk
+   * app-arm64-v8a-release.apk
+   * app-x86_64-release.apk
